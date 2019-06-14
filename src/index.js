@@ -9,6 +9,8 @@ const socketio = require('socket.io')
 // For filtering out inappropriate words.
 const badWordsFilter = require('bad-words')
 
+const {generateMessage, generateLocationMessage} = require('./utils/messages')
+
 const app = express()
 
 const server = http.createServer(app)
@@ -27,10 +29,10 @@ io.on('connection', (socket) =>{
 
     // Send an event from the server to the client.
     // It's to a specific client connection. Not to everyone.
-    socket.emit('message', 'Welcome!!')
+    socket.emit('message', generateMessage('Welcome!'))
 
     // Broadcast nessage to everyone except the owner(initiating client)
-    socket.broadcast.emit('message', 'A new user has joined.')
+    socket.broadcast.emit('message', generateMessage('A new user has joined.'))
 
     socket.on('sendMessage', (messageRcvd, callback) => {
 
@@ -41,7 +43,7 @@ io.on('connection', (socket) =>{
         }
 
         // Send to every connected client.
-        io.emit('message', messageRcvd)
+        io.emit('message', generateMessage(messageRcvd))
 
         // Callback(acknowledge the event) is executed on 
         callback()
@@ -49,13 +51,14 @@ io.on('connection', (socket) =>{
 
     // Send location of one client to every other client.
     socket.on('sendLocation', (locationCoords, locAckn) =>{
-        io.emit('locationMessage', `https://google.com/maps?q=${locationCoords.latitude},${locationCoords.longitude}`)
+        io.emit('locationMessage', 
+          generateLocationMessage(`https://google.com/maps?q=${locationCoords.latitude},${locationCoords.longitude}`))
         locAckn()
     })
 
     // Whenever a client disconnects must be handled inside the io.on  like below.
     socket.on('disconnect', () => {
-        io.emit('message', ' A user has left.')
+        io.emit('message', generateMessage('A user has left.'))
     })
 })
 

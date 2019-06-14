@@ -1,29 +1,48 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <title>Chat App</title>
+        <link rel="icon" href="/img/favicon.png">
+        <link rel="stylesheet" href="/css/styles.css">
 
     </head>
     <body>
-        Chat-Application
-        <div id="messages">
+        <div class= "chat">
+            <div class="chat__sidebar">
 
+            </div>
+            <div class="chat__main">
+                <div id="messages" class="chat__messages"></div>
+
+                <div class="compose">
+                    <form id="messageForm">
+                        <input type="text" 
+                                name="msg"
+                                placeholder="your message...">
+                        <button id="submitButton" type="submit">Send</button>
+                    </form>
+                    <button id="sendMyLocation">Send my Location</button>
+                </div>
+            </div>
         </div>
-
-        <form id="messageForm">
-            <input type="text" 
-              id="msg"
-              placeholder="your message..."></input>
-            <button id="submitButton" type="submit">Send</button>
-        </form>
-        <button id="sendMyLocation">Send my Location</button>
+        
         <script id="message_template" type="text/html">
-            <div> 
+            <div class="msg"> 
+                <p>
+                    <span class="message__name">Some dummy user </span>
+                    <span class="message__meta">{{createdAt}} </span>
+                </p>
+
                 <p>{{message}}</p>
             </div>
         </script>
         <script id="locationmessage_template" type="text/html">
-            <div> 
-                <p><a href ="{{locationUrl}}" target="_blank">My current location.</a></p>
+            <div class= "msg"> 
+                <p>
+                    <span class="message__name">Some dummy user </span>
+                    <span class="message__meta">{{createdAt}} </span>
+                </p>
+                <p><a href ="{{url}}" target="_blank">My current location.</a></p>
             </div>
         </script>
         <!-- Client side socket io library. -->

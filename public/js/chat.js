@@ -26,7 +26,8 @@ socket.on('message', (messageData) => {
 
     // render the new message to the browser.
     const myHtml = Mustache.render(messageTemplate, {
-        message: messageData
+        message: messageData.text,
+        createdAt: moment(messageData.createdAt).format('HH:mm:ss')
     })
 
     $messages.insertAdjacentHTML('beforeend', myHtml)
@@ -34,11 +35,12 @@ socket.on('message', (messageData) => {
 
  // Receive location related message from the server.
  socket.on('locationMessage', (locationUrl) => {
-     console.log(`locationMessage: ${locationUrl}`)  
+     console.log(`locationMessage: ${locationUrl.url}`)  
           
     // render the new message to the browser.
     const myHtml = Mustache.render(locationMessageTemplate, {
-        locationUrl
+        url: locationUrl.url,
+        createdAt: moment(locationUrl.createdAt).format('HH:mm:ss')
     })
      $messages.insertAdjacentHTML('beforeend', myHtml)
  })
