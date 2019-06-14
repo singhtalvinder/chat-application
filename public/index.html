@@ -5,5 +5,15 @@
     </head>
     <body>
         Chat-Application
+        <form id="messageForm">
+            <input type="text" 
+              id="msg"
+              placeholder="your message..."></input>
+            <button type="submit">Send</button>
+        </form>
+        <button id="sendMyLocation">Send my Location</button>
+        <!-- Client side socket io library. -->
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="/js/chat.js"></script>
     </body>
 </html>
