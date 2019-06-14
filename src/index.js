@@ -49,7 +49,7 @@ io.on('connection', (socket) =>{
 
     // Send location of one client to every other client.
     socket.on('sendLocation', (locationCoords, locAckn) =>{
-        io.emit('message', `https://google.com/maps?q=${locationCoords.latitude},${locationCoords.longitude}`)
+        io.emit('locationMessage', `https://google.com/maps?q=${locationCoords.latitude},${locationCoords.longitude}`)
         locAckn()
     })
 
