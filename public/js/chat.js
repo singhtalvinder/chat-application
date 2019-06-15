@@ -13,6 +13,8 @@ const $messages = document.querySelector('#messages')
 const messageTemplate = document.querySelector('#message_template').innerHTML
 const locationMessageTemplate = document.querySelector('#locationmessage_template').innerHTML
 
+// Options.
+const {username, room} = Qs.parse(location.search, {ignoreQueryPrefix: true}) // remove the ? from the query string
 
 ////////////////////////////////////////////////////////////////////////////
 // Acknowledgement pattern:
@@ -96,3 +98,6 @@ $sendLocationButton.addEventListener('click', () => {
         })
     })
 })
+
+// Emit join.Add a corresponding listener to the server to handle the request.
+socket.emit('join', {username, room})

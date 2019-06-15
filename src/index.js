@@ -27,13 +27,35 @@ app.use(express.static(publicDirPath))
 io.on('connection', (socket) =>{
     console.log('New websocket connection established.')
 
-    // Send an event from the server to the client.
-    // It's to a specific client connection. Not to everyone.
-    socket.emit('message', generateMessage('Welcome!'))
+    // // Send an event from the server to the client.
+    // // It's to a specific client connection. Not to everyone.
+    // socket.emit('message', generateMessage('Welcome!'))
 
-    // Broadcast nessage to everyone except the owner(initiating client)
-    socket.broadcast.emit('message', generateMessage('A new user has joined.'))
+    // // Broadcast nessage to everyone except the owner(initiating client)
+    // socket.broadcast.emit('message', generateMessage('A new user has joined.'))
 
+    // Listener for join room.
+    socket.on('join', ({ username, room}) => {
+        // can only be used on server.
+        socket.join(room)
+
+        /////////////////////////////////////////////////////////////
+        // send only to the joined room.
+        //io.to.emit
+        // Send to everyone except the specific client.
+        //socket.broadcast.to.emit
+        ///////////////////////////////////////////////////////////////
+
+        // Send an event from the server to the client.
+        // It's to a specific client connection. Not to everyone.
+        socket.emit('message', generateMessage('Welcome!'))
+
+        // Broadcast nessage to everyone in the room(joined) except the owner(initiating client)
+        socket.broadcast.to(room).emit('message', generateMessage(`${username} has joined: ${room}.`))
+
+    })
+
+    // Listener for the messages.
     socket.on('sendMessage', (messageRcvd, callback) => {
 
         // Check for inappropriate words.
@@ -43,7 +65,7 @@ io.on('connection', (socket) =>{
         }
 
         // Send to every connected client.
-        io.emit('message', generateMessage(messageRcvd))
+        io.to('kids').emit('message', generateMessage(messageRcvd))
 
         // Callback(acknowledge the event) is executed on 
         callback()
