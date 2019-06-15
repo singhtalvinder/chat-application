@@ -12,9 +12,42 @@ const $messages = document.querySelector('#messages')
 // templates for rendering.
 const messageTemplate = document.querySelector('#message_template').innerHTML
 const locationMessageTemplate = document.querySelector('#locationmessage_template').innerHTML
+const sidebarTemplate = document.querySelector('#sidebar_template').innerHTML
 
 // Options.
 const {username, room} = Qs.parse(location.search, {ignoreQueryPrefix: true}) // remove the ? from the query string
+
+// Message autoscrolling window.
+const autoscroll = () => {
+    // Get new message element.
+    const $newMessage = $messages.lastElementChild
+
+    // Get height of new message and margins from its styles to get the exact data.
+    const newMessageStyles = getComputedStyle($newMessage)
+    const newMessageMargin = parseInt(newMessageStyles.marginBottom)
+
+    const newMessageHeight = $newMessage.offsetHeight + newMessageMargin
+
+    // Visible height of the this chat window.
+    const visibleHeight = $messages.offsetHeight
+
+    // Height of the messages(chat) container.
+    const containerHeight = $messages.scrollHeight
+
+    // Check how far is scrolled.
+    //  $messages.scrollTop give the distance from top(generally where the scrollbar is).
+    // Visible height : Scrollbar height.
+    const scrollOffset = $messages.scrollTop + visibleHeight
+
+    // Scroll bottom when total containerHeight  less the (last) newMessage height
+    // is less than or equal the scroll offset.
+    if(containerHeight - newMessageHeight <= scrollOffset) {
+        // Scroll down all the way.
+        $messages.scrollTop = $messages.scrollHeight
+    }
+
+}
+
 
 ////////////////////////////////////////////////////////////////////////////
 // Acknowledgement pattern:
@@ -34,6 +67,7 @@ socket.on('message', (messageData) => {
     })
 
     $messages.insertAdjacentHTML('beforeend', myHtml)
+    autoscroll()
 })
 
  // Receive location related message from the server.
@@ -47,10 +81,21 @@ socket.on('message', (messageData) => {
         url: locationMsg.url,
         createdAt: moment(locationMsg.createdAt).format('HH:mm:ss')
     })
-     $messages.insertAdjacentHTML('beforeend', myHtml)
+
+    $messages.insertAdjacentHTML('beforeend', myHtml)
+    autoscroll()
  })
 
-$messageForm.addEventListener('submit', (e) => {
+ // Listen to roomData message.
+ socket.on('roomData', ({ room, users }) => {
+    const roomHtml = Mustache.render(sidebarTemplate, {
+        room,
+        users
+    })
+    document.querySelector('#sidebar').innerHTML = roomHtml
+ })
+
+ $messageForm.addEventListener('submit', (e) => {
     e.preventDefault() //prevent default form refresh.
 
     // Disable the button.

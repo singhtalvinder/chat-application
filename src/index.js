@@ -61,7 +61,13 @@ io.on('connection', (socket) =>{
         // Broadcast nessage to everyone in the room(joined) except the owner(initiating client)
         socket.broadcast
             .to(user.room)
-            .emit('message', generateMessage('Admin', `${user.username} has joined: ${user.room}.`))
+            .emit('message', generateMessage('Admin', `${user.username} has joined.`))
+
+        // Send message(active users) to everyone including this user.
+        io.to(user.room).emit('roomData', {
+            room: user.room,
+            users: getUsersInRoom(user.room)
+        })
 
         // let the client know it was able to join successfully.
         joinCallback()
@@ -104,6 +110,12 @@ io.on('connection', (socket) =>{
         // Send message only if a user is removed.
         if(user) {
             io.to(user.room).emit('message', generateMessage('Admin', `${user.username} has left the room.`))
+            
+            // Send message(active users) to everyone including this user.
+            io.to(user.room).emit('roomData', {
+                room: user.room,
+                users: getUsersInRoom(user.room)
+        })
         }
     })
 })
