@@ -28,6 +28,7 @@ socket.on('message', (messageData) => {
 
     // render the new message to the browser.
     const myHtml = Mustache.render(messageTemplate, {
+        username: messageData.username,
         message: messageData.text,
         createdAt: moment(messageData.createdAt).format('HH:mm:ss')
     })
@@ -36,13 +37,15 @@ socket.on('message', (messageData) => {
 })
 
  // Receive location related message from the server.
- socket.on('locationMessage', (locationUrl) => {
-     console.log(`locationMessage: ${locationUrl.url}`)  
+ socket.on('locationMessage', (locationMsg) => {
+     console.log(`locationMessage: ${locationMsg.url}`)  
           
     // render the new message to the browser.
     const myHtml = Mustache.render(locationMessageTemplate, {
-        url: locationUrl.url,
-        createdAt: moment(locationUrl.createdAt).format('HH:mm:ss')
+        url: locationMsg.url,
+        username: locationMsg.username,
+        url: locationMsg.url,
+        createdAt: moment(locationMsg.createdAt).format('HH:mm:ss')
     })
      $messages.insertAdjacentHTML('beforeend', myHtml)
  })
@@ -100,4 +103,12 @@ $sendLocationButton.addEventListener('click', () => {
 })
 
 // Emit join.Add a corresponding listener to the server to handle the request.
-socket.emit('join', {username, room})
+socket.emit('join', {username, room}, (error) => {
+    // ack func to process errors or success.
+
+    if(error) {
+        alert(error)
+        // redirect to home page.
+        location.href= '/'
+    }
+})

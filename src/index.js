@@ -9,7 +9,8 @@ const socketio = require('socket.io')
 // For filtering out inappropriate words.
 const badWordsFilter = require('bad-words')
 
-const {generateMessage, generateLocationMessage} = require('./utils/messages')
+const { generateMessage, generateLocationMessage } = require('./utils/messages')
+const { getUser, addUser, removeUser, getUsersInRoom } = require('./utils/users')
 
 const app = express()
 
@@ -35,9 +36,16 @@ io.on('connection', (socket) =>{
     // socket.broadcast.emit('message', generateMessage('A new user has joined.'))
 
     // Listener for join room.
-    socket.on('join', ({ username, room}) => {
+    socket.on('join', (options, joinCallback) => {
+        // Add the user.
+        const {error, user } = addUser( {id: socket.id, ...options}) // get username, room from options.
+        if(error) {
+            return joinCallback(error)
+        }
+        // Proceed if user is added.
+
         // can only be used on server.
-        socket.join(room)
+        socket.join(user.room)
 
         /////////////////////////////////////////////////////////////
         // send only to the joined room.
@@ -48,15 +56,22 @@ io.on('connection', (socket) =>{
 
         // Send an event from the server to the client.
         // It's to a specific client connection. Not to everyone.
-        socket.emit('message', generateMessage('Welcome!'))
+        socket.emit('message', generateMessage('Admin', 'Welcome!'))
 
         // Broadcast nessage to everyone in the room(joined) except the owner(initiating client)
-        socket.broadcast.to(room).emit('message', generateMessage(`${username} has joined: ${room}.`))
+        socket.broadcast
+            .to(user.room)
+            .emit('message', generateMessage('Admin', `${user.username} has joined: ${user.room}.`))
+
+        // let the client know it was able to join successfully.
+        joinCallback()
 
     })
 
     // Listener for the messages.
     socket.on('sendMessage', (messageRcvd, callback) => {
+        // Get this user.
+        const user = getUser(socket.id)
 
         // Check for inappropriate words.
         const filter = new badWordsFilter()
@@ -64,8 +79,8 @@ io.on('connection', (socket) =>{
             return callback('Profanity not allowed!!')
         }
 
-        // Send to every connected client.
-        io.to('kids').emit('message', generateMessage(messageRcvd))
+        // Send to every connected client in the same room.
+        io.to(user.room).emit('message', generateMessage( user.username, messageRcvd))
 
         // Callback(acknowledge the event) is executed on 
         callback()
@@ -73,14 +88,23 @@ io.on('connection', (socket) =>{
 
     // Send location of one client to every other client.
     socket.on('sendLocation', (locationCoords, locAckn) =>{
-        io.emit('locationMessage', 
-          generateLocationMessage(`https://google.com/maps?q=${locationCoords.latitude},${locationCoords.longitude}`))
+        // Get this user.
+        const user = getUser(socket.id)
+
+        io.to(user.room).emit('locationMessage', 
+          generateLocationMessage(user.username,`https://google.com/maps?q=${locationCoords.latitude},${locationCoords.longitude}`))
         locAckn()
     })
 
     // Whenever a client disconnects must be handled inside the io.on  like below.
     socket.on('disconnect', () => {
-        io.emit('message', generateMessage('A user has left.'))
+        // removeUser.
+        const user = removeUser(socket.id)
+
+        // Send message only if a user is removed.
+        if(user) {
+            io.to(user.room).emit('message', generateMessage('Admin', `${user.username} has left the room.`))
+        }
     })
 })
 

@@ -1,14 +1,18 @@
-// common functions.
-const generateMessage = (text) =>{
+// Common functions.
+// Generate message.
+const generateMessage = (username, text) =>{
     return {
+        username,
         text,
         createdAt: new Date().getTime()
     }
 
 }
 
-const generateLocationMessage = (msgUrl) =>{
+// Generate location message.
+const generateLocationMessage = (username, msgUrl) =>{
     return {
+        username,
         url: msgUrl,
         createdAt: new Date().getTime()
     }
